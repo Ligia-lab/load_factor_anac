@@ -1,6 +1,20 @@
-# ✈️ Projeto de Análise do Load Factor - ANAC (2023–2025)
+# ✈️ Projeto: Análise e Previsão de **Load Factor** (ANAC)
 
-Este repositório apresenta um estudo sobre o **Load Factor (fator de aproveitamento dos assentos)** das principais companhias aéreas brasileiras, utilizando os **microdados públicos da ANAC**.
+Este repositório reúne um fluxo de **ETL + EDA + Modelagem** para analisar e projetar o **load factor** (taxa de ocupação de assentos) da aviação comercial brasileira a partir dos **microdados da ANAC**, cobrindo o período de **jan/2023 a jul/2025**.
+
+> Arquivo principal do projeto: **`projeto_machine_learning_load_factor.ipynb`**
+
+---
+
+## 🎯 Objetivo
+
+* Consolidar e limpar os microdados oficiais da ANAC.
+* Calcular o **load factor diário/mensal** por companhia aérea e por recorte de negócio (ex.: REGULAR / DOMÉSTICA).
+* Explorar padrões sazonais (por mês e por dia da semana) e tendências.
+* Treinar modelos de **regressão** (Spark MLlib) para **prever o load factor** nos meses seguintes.
+* Comparações entre empresas **AD (Azul), G3 (Gol) e JJ (Latam)**  
+
+---
 
 ## 📊 Fonte dos Dados
 
@@ -16,12 +30,6 @@ Os dados utilizados são da base **Básica** disponibilizada pela ANAC:
   - Assentos ofertados
   - Tipo de serviço (excluindo cargueiro)
 
-## 🎯 Objetivo
-
-Explorar e calcular o **fator de aproveitamento de assentos (Load Factor)** das companhias aéreas:
-- Evolução **mensal por companhia aérea**  
-- Diferenças por **dia da semana**  
-- Comparações entre empresas **AD (Azul), G3 (Gol) e JJ (Latam)**  
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -36,51 +44,138 @@ load_factor_anac/
 │── projeto_machine_learning_load_factor.ipynb # Notebook principal com ETL e análises
 │── data/ # (opcional) pasta para armazenamento local de arquivos
 │── README.md # Este arquivo
+│── requirements.txt
 ```
 
+## ⚙️ Ambiente e requisitos
 
-## 📈 Etapas da Análise
+O notebook utiliza **PySpark** para engenharia de atributos e modelagem, além de bibliotecas Python usuais.
 
-1. **Carregamento dos dados**  
-   - Arquivos da ANAC (zipados) são extraídos e lidos no PySpark.  
+### Requisitos mínimos
 
-2. **Tratamento de dados**  
-   - Filtros aplicados:  
-     - Companhias `AD`, `G3`, `JJ`  
-     - Voos domésticos  
-     - Grupo **REGULAR**  
-   - Exclusão de serviços do tipo **CARGUEIRO**  
-   - Tratamento de valores nulos e remoção de colunas irrelevantes  
+* **Python 3.10+**
+* **Java 11+** (necessário para PySpark)
+* Bibliotecas: `pyspark`, `pandas`, `numpy`, `matplotlib`
 
-3. **Cálculo de métricas**  
-   - Cálculo do **Load Factor diário e mensal**  
-   - Agrupamentos por **companhia** e por **dia da semana**  
+### Exemplo de `requirements.txt`
 
-4. **Visualizações**  
-   - Evolução mensal do Load Factor por companhia aérea  
-   - Comparação entre as principais empresas ao longo do tempo  
+```txt
+pyspark>=3.5
+pandas>=2.2
+numpy>=1.26
+matplotlib>=3.8
+jupyter>=1.0  # opcional, para executar localmente
+ipykernel>=6  # opcional, para registrar o kernel do projeto
+```
 
-## 🚀 Como Executar
+### Configuração rápida (Linux/macOS)
 
-1. Clone este repositório:
-   ```bash
-   git clone https://github.com/Ligia-lab/load_factor_anac.git
-   cd load_factor_anac
-   ```
-2. Instale as dependências:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Abra o notebook no Jupyter:
-   ```
-   jupyter notebook projeto_machine_learning_load_factor.ipynb
-   ```
+```bash
+# 1) Crie e ative um ambiente virtual
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-   📌 Observações
+# 2) Instale as dependências
+pip install -r requirements.txt
 
-- Os dados podem ser baixados diretamente do site da ANAC (link acima).
+# 3) Garanta o Java instalado e exporte JAVA_HOME, se necessário
+# Exemplo (ajuste conforme seu sistema):
+export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
 
-- O projeto foi desenvolvido em ambiente Google Colab, mas pode ser adaptado para execução local.
+# 4) Rode o Jupyter e abra o notebook
+jupyter notebook notebooks/projeto_machine_learning_load_factor.ipynb
+```
 
-- Objetivo principal: estudo exploratório e educacional sobre a aplicação de PySpark em dados reais.
+> Caso utilize **VS Code**, instale a extensão **Jupyter** e selecione o kernel do ambiente virtual.
+
+---
+
+
+## 🧹 ETL (resumo)
+
+1. **Leitura** dos CSV/ZIP dos microdados.
+2. **Seleção de recortes** (ex.: `ds_grupo_di == "REGULAR"`, `ds_natureza_etapa == "DOMÉSTICA"`, empresas de interesse como `AD`, `G3`, `JJ`).
+3. **Limpeza** (remoção de colunas vazias/irrelevantes, padronização de datas e tipos).
+4. **Features**:
+
+   * `load_factor_dia` por voo/data (razão entre passageiros e assentos ofertados).
+   * Agregações **diárias** e **mensais** por companhia.
+
+> Os passos estão implementados e comentados diretamente no notebook.
+
+---
+
+## 🔎 EDA (exploração)
+
+* Evolução **mensal** do load factor por companhia.
+* Comportamento **por dia da semana**.
+* Identificação de sazonalidade e outliers.
+
+Gráficos típicos:
+
+* Linha: **Evolução mensal** do `load_factor` (ex.: `plt.plot` por companhia).
+* Barras: **Distribuição por dia da semana**.
+
+---
+
+## 🤖 Modelagem (Spark MLlib)
+
+Modelos de regressão utilizados no notebook:
+
+* **LinearRegression**
+* **RandomForestRegressor**
+* **GBTRegressor**
+
+Pipeline geral:
+
+1. Montagem de vetores com **`VectorAssembler`**.
+2. Treino/validação com **`RegressionEvaluator`**.
+3. **Previsões** para a janela de interesse (ex.: próximos 3 meses) e comparação por companhia aérea.
+
+> Ajuste hiperparâmetros, janelas e variáveis explicativas conforme sua necessidade.
+
+---
+
+## ▶️ Como executar o projeto
+
+1. **Baixe** os microdados da ANAC e **coloque em `data/raw/`**.
+2. **Execute** o notebook `notebooks/projeto_machine_learning_load_factor.ipynb` (ou na raiz, conforme seu layout) e siga as células na ordem.
+3. **Salve** as saídas (tabelas/figuras) em `data/processed/` e `reports/figures/`, se desejar organizar resultados.
+
+---
+
+## 📈 Exemplos de resultados
+
+* Curvas do **load factor mensal** por companhia (2023‑01 → 2025‑07).
+* **Tabela/CSV** com previsões por data/companhia.
+* Gráficos de **importância de features** nos modelos de árvore (quando aplicável).
+
+> Os exemplos são gerados durante a execução do notebook e podem variar conforme o período/dados carregados.
+
+---
+
+## 📝 Notas e boas práticas
+
+* **Datas faltantes**: verifique lacunas e trate-as antes de treinar modelos.
+* **Qualidade dos dados**: cheque valores zerados (ex.: passageiros pagos/grátis) e registros de carga quando não deseja incluí-los.
+* **Reprodutibilidade**: fixe seeds quando comparar modelos.
+
+---
+
+## 📚 Créditos
+
+* **Dados**: Agência Nacional de Aviação Civil (ANAC) – microdados públicos.
+* **Projeto e estudo**: este repositório foi criado para estudo/aprendizado em ciência de dados e engenharia de dados com foco em séries temporais/ML para **load factor**.
+
+---
+
+## 🧾 Licença
+
+Este projeto é disponibilizado nos termos definidos no arquivo **LICENSE** (se existente). Caso não exista um arquivo de licença, considere adicionar um antes de publicar resultados derivados.
+
+---
+
+## 💬 Contato
+
+Sinta-se à vontade para abrir **Issues** ou **Pull Requests** com sugestões de melhoria, correções e novas análises.
 
