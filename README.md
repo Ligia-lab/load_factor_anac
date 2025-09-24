@@ -169,11 +169,7 @@ Pipeline geral:
 
 ---
 
-## 🧾 Licença
 
-Este projeto é disponibilizado nos termos definidos no arquivo **LICENSE** (se existente). Caso não exista um arquivo de licença, considere adicionar um antes de publicar resultados derivados.
-
----
 
 ## 💬 Contato
 
