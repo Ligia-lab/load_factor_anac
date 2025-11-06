@@ -1,4 +1,4 @@
-# ✈️ Projeto: Análise e Previsão de **Load Factor** (ANAC)
+# ✈️ Projeto: Análise e Previsão de **Load Factor** (ANAC) com PySpark
 
 Este repositório reúne um fluxo de **ETL + EDA + Modelagem** para analisar e projetar o **load factor** (taxa de ocupação de assentos) da aviação comercial brasileira a partir dos **microdados da ANAC**, cobrindo o período de **jan/2023 a jul/2025**.
 
@@ -154,6 +154,52 @@ Pipeline geral:
 
 ---
 
+## 🧩 Troubleshooting
+
+### Erro: `PySparkRuntimeError: [JAVA_GATEWAY_EXITED] Java gateway process exited before sending its port number.`
+
+#### 💡 Contexto
+Durante a criação da `SparkSession` no Jupyter Notebook (ou Google Colab), o PySpark apresentou o erro acima, impossibilitando a inicialização da sessão.  
+O motivo foi a ausência do **Java Runtime Environment (JRE)** no ambiente, requisito fundamental para o PySpark, pois o Spark roda sobre uma JVM (Java Virtual Machine).
+
+#### 🧠 Causa raiz
+O PySpark depende do **Java Gateway** para comunicar o interpretador Python com o núcleo Java do Apache Spark.  
+Sem o Java instalado ou com a variável de ambiente `JAVA_HOME` ausente/incorreta, o gateway falha antes de estabelecer a comunicação, gerando o erro.
+
+#### 🛠️ Solução aplicada
+1. Instalar o Java 17 (OpenJDK):
+   ```bash
+   !apt-get update -y
+   !apt-get install -y openjdk-17-jre-headless
+
+2. Configurar as variáveis de ambiente:
+   ```bash
+   import os
+
+   os.environ.pop("SPARK_HOME", None)  # remove SPARK_HOME se estiver setada incorretamente
+   os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-17-openjdk-amd64"
+   os.environ["PATH"] = os.environ["JAVA_HOME"] + "/bin:" + os.environ["PATH"]
+
+3. Verificar a instalação:
+   ```bash
+   !java -version
+
+4. Recriar a sessão Spark:
+   ```bash
+   from pyspark.sql import SparkSession
+
+   sessao_spark = (SparkSession.builder
+                    .master("local[*]")
+                    .appName("Load Factor (ANAC)")
+                    .getOrCreate())
+
+### ✅ Resultado
+
+Após configurar o Java corretamente e limpar a variável SPARK_HOME, a sessão Spark foi criada com sucesso.
+Isso garante que o ambiente PySpark possa ser utilizado normalmente para leitura, processamento e análise dos dados ANAC.
+
+---
+
 ## 📝 Notas e boas práticas
 
 * **Datas faltantes**: verifique lacunas e trate-as antes de treinar modelos.
@@ -169,11 +215,7 @@ Pipeline geral:
 
 ---
 
-## 🧾 Licença
 
-Este projeto é disponibilizado nos termos definidos no arquivo **LICENSE** (se existente). Caso não exista um arquivo de licença, considere adicionar um antes de publicar resultados derivados.
-
----
 
 ## 💬 Contato
 
