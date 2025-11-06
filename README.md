@@ -1,4 +1,4 @@
-# ✈️ Projeto: Análise e Previsão de **Load Factor** (ANAC)
+# ✈️ Projeto: Análise e Previsão de **Load Factor** (ANAC) com PySpark
 
 Este repositório reúne um fluxo de **ETL + EDA + Modelagem** para analisar e projetar o **load factor** (taxa de ocupação de assentos) da aviação comercial brasileira a partir dos **microdados da ANAC**, cobrindo o período de **jan/2023 a jul/2025**.
 
